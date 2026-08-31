@@ -277,6 +277,8 @@ function hideLikedPopup(){
 function isLiked(id){ return likedSet.has(String(id)); }
 function validLikedCount(){
   // count only ids that still exist in current dataset
+  // if jobs array is empty/undefined (initial load), fallback to likedSet.size so chip shows
+  if(!jobs || !jobs.length) return likedSet.size;
   let c=0;
   likedSet.forEach(id=>{ if(jobs.some(j=>String(j.id)===String(id))) c++; });
   return c;
@@ -287,8 +289,9 @@ function updateLikedChip(){
   const valid=validLikedCount();
   chip.textContent=`❤️ Liked (${valid})`;
   chip.setAttribute('aria-pressed', state.likedOnly?'true':'false');
-  // show if any valid likes or currently filtering liked
-  chip.style.display = (valid>0 || state.likedOnly) ? 'inline-flex' : 'none';
+  const hasAny = likedSet.size>0;
+  // show if any liked (even if some expired) or currently filtering liked - ensures chip visible after refresh
+  chip.style.display = (hasAny || state.likedOnly) ? 'inline-flex' : 'none';
 }
 function syncLikedUI(){
   document.querySelectorAll('[data-like]').forEach(btn=>{
@@ -434,10 +437,12 @@ $('#likedFilterChip').onclick=()=>{
   $('#resultsHead').scrollIntoView({behavior:'smooth',block:'start'});
 };
 
-function render(){const a=filtered();renderNavigation();renderCharts();renderBreakdowns();const parts=[`${a.length.toLocaleString()} jobs`,...[...state.role],...[...state.metro].map(v=>labels.metro[v]),...[...state.level].map(v=>labels.level[v])];$('#resultsTitle').textContent=parts.join(' · ');const extras=[];if(state.mode.size)extras.push([...state.mode].map(v=>labels.mode[v]).join(' + '));if(state.source.size)extras.push(`source: ${[...state.source].join(' + ')}`);if(state.company.size)extras.push(`company: ${[...state.company].join(' + ')}`);if(state.salary)extras.push('salary listed');if(state.q)extras.push(`matching “${state.q}”`);$('#resultsMeta').innerHTML=extras.length?`Also filtered by <strong>${esc(extras.join(' · '))}</strong> · ${totalJobs.toLocaleString()} total in snapshot`:`${totalJobs.toLocaleString()} total listings in snapshot`;$('#mobileCount').textContent=`${a.length.toLocaleString()} matches`;const show=a.slice(0,state.shown);$('#jobGrid').innerHTML=show.length?show.map(jobCard).join(''):`<div class="empty"><h3>No exact matches</h3><p>Try removing a filter or searching a broader term.</p></div>`;$('#loadMore').hidden=state.shown>=a.length;$('#loadMore').textContent=`Show more · ${Math.min(24,a.length-state.shown).toLocaleString()} ;try{syncLikedUI();updateLikedChip();}catch(e){}next`}
+function render(){const a=filtered();renderNavigation();renderCharts();renderBreakdowns();const parts=[`${a.length.toLocaleString()} jobs`,...[...state.role],...[...state.metro].map(v=>labels.metro[v]),...[...state.level].map(v=>labels.level[v])];$('#resultsTitle').textContent=parts.join(' · ');const extras=[];if(state.mode.size)extras.push([...state.mode].map(v=>labels.mode[v]).join(' + '));if(state.source.size)extras.push(`source: ${[...state.source].join(' + ')}`);if(state.company.size)extras.push(`company: ${[...state.company].join(' + ')}`);if(state.salary)extras.push('salary listed');if(state.q)extras.push(`matching “${state.q}”`);$('#resultsMeta').innerHTML=extras.length?`Also filtered by <strong>${esc(extras.join(' · '))}</strong> · ${totalJobs.toLocaleString()} total in snapshot`:`${totalJobs.toLocaleString()} total listings in snapshot`;$('#mobileCount').textContent=`${a.length.toLocaleString()} matches`;const show=a.slice(0,state.shown);$('#jobGrid').innerHTML=show.length?show.map(jobCard).join(''):`<div class="empty"><h3>No exact matches</h3><p>Try removing a filter or searching a broader term.</p></div>`;$('#loadMore').hidden=state.shown>=a.length;$('#loadMore').textContent=`Show more · ${Math.min(24,a.length-state.shown).toLocaleString()}`;try{syncLikedUI();updateLikedChip();}catch(e){}
 $('#loadMore').onclick=()=>{state.shown+=24;render()};
 const filters=$('#filters'),scrim=$('#sheetScrim');function sheet(open){filters.classList.toggle('open',open);scrim.classList.toggle('open',open);document.body.style.overflow=open?'hidden':''}$('#mobileFilterBtn').onclick=()=>sheet(true);$('#sheetOpen').onclick=()=>sheet(true);scrim.onclick=()=>sheet(false);document.addEventListener('keydown',e=>{if(e.key==='Escape'){$('#detailScrim').classList.contains('open')?closeDetail():sheet(false)}});
 syncControls();render();
+try{updateLikedChip();}catch(e){}
+try{syncLikedUI();}catch(e){}
 })();
 </script>
 
