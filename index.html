@@ -35,6 +35,47 @@
 .detail-scrim{display:none;position:fixed;inset:0;background:rgba(3,10,7,.62);z-index:80;padding:clamp(10px,4vw,42px);align-items:center;justify-content:center}.detail-scrim.open{display:flex}.detail-panel{width:min(760px,100%);max-height:min(88vh,900px);overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:0 26px 80px rgba(0,0,0,.35);padding:clamp(20px,4vw,36px);position:relative}.detail-close{position:sticky;z-index:2;top:0;float:right;width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:var(--panel);cursor:pointer;font-size:22px;line-height:1}.detail-company{font:600 12px 'IBM Plex Mono',monospace;color:var(--accent);text-transform:uppercase;letter-spacing:.04em;padding-right:50px}.detail-panel h2{font-size:clamp(26px,4vw,40px);line-height:1.08;letter-spacing:-.04em;margin:10px 44px 10px 0}.detail-location{color:var(--muted);margin:0 50px 17px 0}.detail-facts{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:24px}.detail-section{border-top:1px solid var(--line);padding-top:22px;margin-top:22px}.detail-section h3{font-size:15px;margin:0 0 10px}.detail-description{font-size:15px;line-height:1.7;color:var(--ink)}.detail-description p{margin:0 0 1em}.detail-description p:last-child{margin-bottom:0}.detail-source{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:13px}.detail-source dt{color:var(--muted)}.detail-source dd{margin:0;min-width:0;overflow-wrap:anywhere}.original-link{display:inline-flex;align-items:center;gap:8px;color:var(--accent);font-weight:800;text-decoration:none;margin-top:22px;min-height:44px}.original-link:hover{text-decoration:underline}.original-link svg{width:16px}
 @media(max-width:760px){.drill-nav{margin:12px 0 0;padding:15px;grid-template-columns:1fr auto;gap:10px 12px}.drill-copy h2{font-size:17px}.drill-copy p{display:none}.breadcrumbs{margin:0 -3px}.active-filters{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}.active-filters::-webkit-scrollbar{display:none}.filter-tag{flex:0 0 auto}.chart-hint{margin-top:-9px}.detail-scrim{padding:0;align-items:flex-end}.detail-panel{border-radius:20px 20px 0 0;max-height:92vh;padding:20px 18px calc(26px + env(safe-area-inset-bottom))}.detail-panel h2{font-size:28px}.job-card{transform:none!important}}
 
+
+/* Like feature */
+.like-btn{
+  min-width:38px;height:38px;border-radius:999px;border:1px solid var(--line);
+  background:var(--panel);display:inline-grid;place-items:center;
+  cursor:pointer;font-size:16px;line-height:1;flex:0 0 auto;
+  transition:transform .12s, background .18s, border-color .18s, color .18s;
+  color:var(--muted);
+}
+.like-btn:hover{transform:scale(1.06);border-color:var(--accent);color:var(--accent)}
+.like-btn.liked{
+  background:color-mix(in srgb,#ff3b5c 14%,var(--panel));
+  border-color:#ff3b5c;color:#ff2a4d;
+}
+.like-btn.liked:hover{filter:brightness(1.05)}
+.job-top{width:100%}
+.like-btn-card{margin-left:auto}
+.liked-chip{
+  display:none;align-items:center;gap:6px;min-height:40px;
+  border-radius:999px;border:1px solid var(--line);background:var(--panel);
+  padding:0 14px;font-size:13px;font-weight:750;cursor:pointer;
+  color:var(--ink);
+}
+.liked-chip[aria-pressed="true"]{
+  background:var(--ink);border-color:var(--ink);color:var(--bg);
+}
+.liked-chip:hover{border-color:var(--accent);color:var(--accent)}
+.liked-chip[aria-pressed="true"]:hover{color:var(--accent2)}
+.detail-like-btn{
+  min-height:42px;border-radius:999px;border:1px solid var(--line);
+  background:var(--panel);padding:0 16px;font-size:13px;font-weight:750;
+  cursor:pointer;display:inline-flex;align-items:center;gap:6px;
+}
+.detail-like-btn.liked{
+  background:color-mix(in srgb,#ff3b5c 14%,var(--panel));
+  border-color:#ff3b5c;color:#ff2a4d;
+}
+@media(max-width:760px){
+  .liked-chip{font-size:12px;min-height:36px;padding:0 11px}
+}
+
 </style>
 </head>
 <body>
@@ -84,7 +125,7 @@
       <div class="chart-card"><div class="chart-top"><h2>Top sources</h2><span>FILTER BY SOURCE</span></div><p class="chart-hint">Select one or more listing sources.</p><div class="rank-list" id="sourceRanks"></div><button class="show-all" id="sourceShowAll" type="button" hidden></button></div>
       <div class="chart-card"><div class="chart-top"><h2>Top companies</h2><span>FILTER BY COMPANY</span></div><p class="chart-hint">Select one or more employers.</p><div class="rank-list" id="companyRanks"></div><button class="show-all" id="companyShowAll" type="button" hidden></button></div>
     </section>
-    <div class="results-head" id="resultsHead"><div><h2 id="resultsTitle">All jobs</h2><div class="results-meta" id="resultsMeta"></div></div><button class="mobile-filter-btn" id="mobileFilterBtn" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M7 12h10M10 17h4"/></svg>Filters</button></div>
+    <div class="results-head" id="resultsHead"><div><h2 id="resultsTitle">All jobs</h2><div class="results-meta" id="resultsMeta"></div></div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><button class="liked-chip" id="likedFilterChip" type="button" aria-pressed="false" style="display:none">❤️ Liked (0)</button><button class="mobile-filter-btn" id="mobileFilterBtn" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M7 12h10M10 17h4"/></svg>Filters</button></div></div>
     <section class="job-grid" id="jobGrid" aria-live="polite"></section>
     <div class="load-wrap"><button class="load" id="loadMore" type="button">Show more</button></div>
   </main>
@@ -120,8 +161,101 @@ const roles=[...new Set(jobs.map(j=>j.role))].sort();
 const labels={metro:{LA:'Greater Los Angeles',SF:'SF Bay Area',SEA:'Seattle',NYC:'New York',REMOTE:'US remote'},level:{newgrad:'New grad',y2:'2+ yrs',y5:'5+ yrs',y10:'10+ yrs'},mode:{remote:'Remote',hybrid:'Hybrid',onsite:'Onsite'}};
 const orders={metro:['LA','SF','SEA','NYC','REMOTE'],level:['newgrad','y2','y5','y10'],mode:['remote','hybrid','onsite']};
 const colors={metro:['#0a7652','#c9f36a','#e19a56','#6c8cff','#de6c83'],mode:['#0a7652','#e19a56','#6c8cff']};
-const state={role:new Set(),metro:new Set(),level:new Set(),mode:new Set(),source:new Set(),company:new Set(),q:'',salary:false,sort:'newest',shown:24};
+const state={role:new Set(),metro:new Set(),level:new Set(),mode:new Set(),source:new Set(),company:new Set(),q:'',salary:false,sort:'newest',shown:24,likedOnly:false};
 const view={allSources:false,allCompanies:false};
+
+/* === Like feature with localStorage === */
+const LIKED_KEY='job-search-app-liked';
+let likedSet=new Set();
+try{
+  const raw=localStorage.getItem(LIKED_KEY);
+  if(raw){ JSON.parse(raw).forEach(id=>likedSet.add(String(id))); }
+}catch(e){}
+function saveLiked(){ try{ localStorage.setItem(LIKED_KEY, JSON.stringify([...likedSet])); }catch(e){} }
+function isLiked(id){ return likedSet.has(String(id)); }
+function validLikedCount(){
+  // count only ids that still exist in current dataset
+  let c=0;
+  likedSet.forEach(id=>{ if(jobs.some(j=>String(j.id)===String(id))) c++; });
+  return c;
+}
+function updateLikedChip(){
+  const chip=document.getElementById('likedFilterChip');
+  if(!chip) return;
+  const valid=validLikedCount();
+  chip.textContent=`❤️ Liked (${valid})`;
+  chip.setAttribute('aria-pressed', state.likedOnly?'true':'false');
+  // show if any valid likes or currently filtering liked
+  chip.style.display = (valid>0 || state.likedOnly) ? 'inline-flex' : 'none';
+}
+function syncLikedUI(){
+  document.querySelectorAll('[data-like]').forEach(btn=>{
+    const id=btn.getAttribute('data-like');
+    const liked=likedSet.has(String(id));
+    btn.classList.toggle('liked', liked);
+    btn.setAttribute('aria-pressed', liked?'true':'false');
+    // preserve title for a11y
+    const title=btn.getAttribute('data-title')||'';
+    if(btn.classList.contains('like-btn')){
+      btn.textContent = liked ? '♥' : '♡';
+      btn.setAttribute('aria-label', (liked?'Unlike ':'Like ')+title);
+    }
+  });
+  const detailBtn=document.getElementById('detailLikeBtn');
+  if(detailBtn){
+    const id=detailBtn.getAttribute('data-like');
+    const liked=likedSet.has(String(id));
+    detailBtn.classList.toggle('liked', liked);
+    detailBtn.setAttribute('aria-pressed', liked?'true':'false');
+    detailBtn.textContent = liked ? '♥ Liked' : '♡ Like';
+  }
+  updateLikedChip();
+}
+function updateCardLike(sid){
+  try{
+    const sel = (window.CSS && CSS.escape) ? CSS.escape(sid) : sid.replace(/"/g,'\"');
+    document.querySelectorAll(`[data-like="${sel}"]`).forEach(btn=>{
+      if(!btn.classList.contains('like-btn')) return;
+      const liked=likedSet.has(String(sid));
+      btn.classList.toggle('liked', liked);
+      btn.setAttribute('aria-pressed', liked?'true':'false');
+      btn.textContent = liked ? '♥' : '♡';
+    });
+  }catch(e){
+    document.querySelectorAll('[data-like]').forEach(btn=>{
+      if(String(btn.getAttribute('data-like'))!==String(sid)) return;
+      const liked=likedSet.has(String(sid));
+      if(!btn.classList.contains('like-btn')) return;
+      btn.classList.toggle('liked', liked);
+      btn.textContent = liked ? '♥' : '♡';
+    });
+  }
+}
+function updateDetailLike(sid){
+  const detailBtn=document.getElementById('detailLikeBtn');
+  if(detailBtn && String(detailBtn.getAttribute('data-like'))===String(sid)){
+    const liked=likedSet.has(String(sid));
+    detailBtn.classList.toggle('liked', liked);
+    detailBtn.setAttribute('aria-pressed', liked?'true':'false');
+    detailBtn.textContent = liked ? '♥ Liked' : '♡ Like';
+  }
+}
+function toggleLike(id, ev){
+  if(ev){ ev.preventDefault(); ev.stopPropagation(); }
+  const sid=String(id);
+  if(likedSet.has(sid)) likedSet.delete(sid); else likedSet.add(sid);
+  saveLiked();
+  syncLikedUI();
+  if(state.likedOnly){
+    state.shown=24;
+    render();
+  } else {
+    updateCardLike(sid);
+    updateDetailLike(sid);
+    updateLikedChip();
+  }
+}
+
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)], esc=s=>String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
 const icon=(type)=> type==='sun'?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z"/></svg>';
 let dark=matchMedia('(prefers-color-scheme: dark)').matches;function setTheme(){document.documentElement.dataset.theme=dark?'dark':'light';$('#themeToggle').innerHTML=icon(dark?'sun':'moon');$('#themeToggle').setAttribute('aria-label',dark?'Switch to light theme':'Switch to dark theme')}setTheme();$('#themeToggle').onclick=()=>{dark=!dark;setTheme()};
@@ -146,7 +280,10 @@ makeChips('#roleChips',roles,'role',v=>v,true);makeChips('#metroChips',orders.me
 $('#search').oninput=e=>{state.q=e.target.value.trim().toLowerCase();state.shown=24;render()};$('#sort').onchange=e=>{state.sort=e.target.value;render()};$('#salaryToggle').onclick=e=>{state.salary=!state.salary;e.currentTarget.setAttribute('aria-pressed',state.salary);state.shown=24;render()};
 function clearAll(){for(const k of ['role','metro','level','mode','source','company'])state[k].clear();state.q='';state.salary=false;state.sort='newest';state.shown=24;$('#search').value='';$('#sort').value='newest';$('#salaryToggle').setAttribute('aria-pressed','false');syncControls();render()}$('#clearBtn').onclick=clearAll;$('#resetAll').onclick=clearAll;
 function syncControls(){enforceSingletons();$$('.chip[data-key]').forEach(b=>{const key=b.dataset.key,pressed=state[key].has(b.dataset.val)&&(!singletonKeys.includes(key)||state[key].size===1);b.setAttribute('aria-pressed',pressed)})}
-function passes(j,exclude){return(exclude==='role'||!state.role.size||state.role.has(j.role))&&(exclude==='metro'||!state.metro.size||state.metro.has(j.metro))&&(exclude==='level'||!state.level.size||state.level.has(j.level))&&(exclude==='mode'||!state.mode.size||state.mode.has(j.work_mode))&&(exclude==='source'||!state.source.size||state.source.has(j.source_label))&&(exclude==='company'||!state.company.size||state.company.has(j.company))&&(!state.salary||j.salary_text||j.salary_min!=null||j.salary_max!=null)&&(!state.q||(`${j.title} ${j.company} ${j.snippet||''} ${j.description||''}`).toLowerCase().includes(state.q))}
+function passes(j,exclude){
+  if(exclude!=='liked' && state.likedOnly && !likedSet.has(String(j.id))) return false;
+  return (exclude==='role'||!state.role.size||state.role.has(j.role))&&(exclude==='metro'||!state.metro.size||state.metro.has(j.metro))&&(exclude==='level'||!state.level.size||state.level.has(j.level))&&(exclude==='mode'||!state.mode.size||state.mode.has(j.work_mode))&&(exclude==='source'||!state.source.size||state.source.has(j.source_label))&&(exclude==='company'||!state.company.size||state.company.has(j.company))&&(!state.salary||j.salary_text||j.salary_min!=null||j.salary_max!=null)&&(!state.q||(`${j.title} ${j.company} ${j.snippet||''} ${j.description||''}`).toLowerCase().includes(state.q))
+}
 function filtered(exclude){let a=jobs.filter(j=>passes(j,exclude));a.sort(state.sort==='company'?(x,y)=>x.company.localeCompare(y.company)||x.title.localeCompare(y.title):(x,y)=>{const valid=s=>/^\d{4}-\d{2}-\d{2}$/.test(s||'')?s:'';return valid(y.posted_date).localeCompare(valid(x.posted_date))});return a}
 function counts(a,key,keys){const o=Object.fromEntries(keys.map(k=>[k,0]));a.forEach(j=>{if(o[j[key]]!==undefined)o[j[key]]++});return o}
 function renderBreakdowns(){const renderRank=(entries,key,listId,toggleId,showAll)=>{const visible=showAll?entries:entries.slice(0,12),max=Math.max(1,...entries.map(x=>x[1]));$(listId).innerHTML=visible.map(([name,count])=>`<button type="button" class="rank-row" data-${key}="${esc(name)}" aria-pressed="${state[key].has(name)}" aria-label="${esc(name)}, ${count} listings"><span class="rank-fill" style="width:${count/max*100}%"></span><span class="rank-content"><span class="rank-name" title="${esc(name)}">${esc(name)}</span><span class="rank-value">${count.toLocaleString()}</span></span></button>`).join('');const button=$(toggleId);button.hidden=entries.length<=12;button.textContent=showAll?`Show top 12`:`Show all ${entries.length.toLocaleString()}`};renderRank(sourceEntries,'source','#sourceRanks','#sourceShowAll',view.allSources);renderRank(companyEntries,'company','#companyRanks','#companyShowAll',view.allCompanies)}
@@ -165,11 +302,22 @@ $('#breadcrumbs').onclick=e=>{const b=e.target.closest('[data-crumb]');if(!b)ret
 $('#activeFilters').onclick=e=>{const b=e.target.closest('[data-key]');if(!b)return;const k=b.dataset.key;if(k==='salary'){$('#salaryToggle').click();return}if(k==='q'){state.q='';$('#search').value=''}else state[k].delete(b.dataset.value);state.shown=24;syncControls();render()};
 function salary(j){if(j.salary_text)return j.salary_text;if(j.salary_min!=null||j.salary_max!=null){const f=n=>n==null?'':new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(n);return j.salary_min!=null&&j.salary_max!=null?`${f(j.salary_min)}–${f(j.salary_max)}`:j.salary_min!=null?`From ${f(j.salary_min)}`:`Up to ${f(j.salary_max)}`}return null}
 function descriptionHtml(text){return String(text??'').trim().split(/\n{2,}/).filter(Boolean).map(block=>`<p>${esc(block).replace(/\n/g,'<br>')}</p>`).join('')}
-function jobCard(j,i){const sal=salary(j),preview=(j.description&&j.description.trim())||j.snippet||'Open for full job details.';return `<article class="job-card" data-id="${esc(j.id)}" tabindex="0" role="button" aria-label="View details for ${esc(j.title)} at ${esc(j.company)}" style="--i:${Math.min(i,12)}"><div class="job-top"><div style="min-width:0"><div class="company">${esc(j.company)}</div><h3>${esc(j.title)}</h3><div class="loc" title="${esc(j.location_raw)}">${esc(j.location_raw)}</div></div></div><div class="badges"><span class="badge">${esc(labels.level[j.level]||j.level)}</span><span class="badge mode">${esc(labels.mode[j.work_mode]||j.work_mode)}</span><span class="badge">${esc(labels.metro[j.metro]||j.metro)}</span></div><p class="salary ${sal?'':'missing'}">${esc(sal||'Salary not listed')}</p><p class="job-preview">${esc(preview)}</p><div class="posted">Posted ${esc(dateFmt(j.posted_date))}</div><div class="job-bottom"><span class="source" title="via ${esc(j.source_label)}">via ${esc(j.source_label)}</span><button class="detail-cta" type="button" data-open="${esc(j.id)}">View details <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg></button></div></article>`}
-let lastFocus=null;function openDetail(id){const j=jobs.find(x=>String(x.id)===String(id));if(!j)return;lastFocus=document.activeElement;const sal=salary(j),description=(j.description&&j.description.trim())||j.snippet||'No description was included in this snapshot.';$('#detailContent').innerHTML=`<button class="detail-close" id="detailClose" type="button" aria-label="Close job details">×</button><div class="detail-company">${esc(j.company)}</div><h2 id="detailTitle">${esc(j.title)}</h2><p class="detail-location">${esc(j.location_raw)}</p><div class="detail-facts"><span class="badge">${esc(labels.level[j.level]||j.level)}</span><span class="badge mode">${esc(labels.mode[j.work_mode]||j.work_mode)}</span><span class="badge">${esc(labels.metro[j.metro]||j.metro)}</span><span class="badge">${esc(sal||'Salary not listed')}</span></div><section class="detail-section"><h3>Job description</h3><div class="detail-description">${descriptionHtml(description)}</div></section><section class="detail-section"><h3>Listing details</h3><dl class="detail-source"><dt>Posted</dt><dd>${esc(dateFmt(j.posted_date))}</dd><dt>Source</dt><dd>${esc(j.source_label||'Not listed')}</dd><dt>Collected</dt><dd>${esc(dateFmt(j.fetched_at))}</dd></dl><a class="original-link" href="${esc(j.url)}" target="_blank" rel="noopener noreferrer">View original posting <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17 17 7M7 7h10v10"/></svg></a></section>`;$('#detailScrim').classList.add('open');$('#detailScrim').setAttribute('aria-hidden','false');document.body.style.overflow='hidden';$('#detailClose').focus()}
+function jobCard(j,i){const sal=salary(j),preview=(j.description&&j.description.trim())||j.snippet||'Open for full job details.';const liked=likedSet.has(String(j.id));return `<article class="job-card" data-id="${esc(j.id)}" tabindex="0" role="button" aria-label="View details for ${esc(j.title)} at ${esc(j.company)}" style="--i:${Math.min(i,12)}"><div class="job-top" style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start"><div style="min-width:0;flex:1"><div class="company">${esc(j.company)}</div><h3>${esc(j.title)}</h3><div class="loc" title="${esc(j.location_raw)}">${esc(j.location_raw)}</div></div><button class="like-btn like-btn-card ${liked?'liked':''}" data-like="${esc(j.id)}" data-title="${esc(j.title)}" aria-pressed="${liked?'true':'false'}" aria-label="${liked?'Unlike':'Like'} ${esc(j.title)}" type="button">${liked?'♥':'♡'}</button></div><div class="badges"><span class="badge">${esc(labels.level[j.level]||j.level)}</span><span class="badge mode">${esc(labels.mode[j.work_mode]||j.work_mode)}</span><span class="badge">${esc(labels.metro[j.metro]||j.metro)}</span></div><p class="salary ${sal?'':'missing'}">${esc(sal||'Salary not listed')}</p><p class="job-preview">${esc(preview)}</p><div class="posted">Posted ${esc(dateFmt(j.posted_date))}</div><div class="job-bottom"><span class="source" title="via ${esc(j.source_label)}">via ${esc(j.source_label)}</span><button class="detail-cta" type="button" data-open="${esc(j.id)}">View details <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg></button></div></article>`}
+let lastFocus=null;function openDetail(id){const j=jobs.find(x=>String(x.id)===String(id));if(!j)return;lastFocus=document.activeElement;const sal=salary(j),description=(j.description&&j.description.trim())||j.snippet||'No description was included in this snapshot.';const liked=likedSet.has(String(j.id));$('#detailContent').innerHTML=`<button class="detail-close" id="detailClose" type="button" aria-label="Close job details">×</button><div class="detail-company">${esc(j.company)}</div><h2 id="detailTitle">${esc(j.title)}</h2><p class="detail-location">${esc(j.location_raw)}</p><div class="detail-facts"><span class="badge">${esc(labels.level[j.level]||j.level)}</span><span class="badge mode">${esc(labels.mode[j.work_mode]||j.work_mode)}</span><span class="badge">${esc(labels.metro[j.metro]||j.metro)}</span><span class="badge">${esc(sal||'Salary not listed')}</span></div><div style="margin:14px 0 4px;display:flex;gap:8px;flex-wrap:wrap"><button class="detail-like-btn ${liked?'liked':''}" id="detailLikeBtn" type="button" data-like="${esc(j.id)}" aria-pressed="${liked?'true':'false'}">${liked?'♥ Liked':'♡ Like'}</button></div><section class="detail-section"><h3>Job description</h3><div class="detail-description">${descriptionHtml(description)}</div></section><section class="detail-section"><h3>Listing details</h3><dl class="detail-source"><dt>Posted</dt><dd>${esc(dateFmt(j.posted_date))}</dd><dt>Source</dt><dd>${esc(j.source_label||'Not listed')}</dd><dt>Collected</dt><dd>${esc(dateFmt(j.fetched_at))}</dd></dl><a class="original-link" href="${esc(j.url)}" target="_blank" rel="noopener noreferrer">View original posting <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17 17 7M7 7h10v10"/></svg></a></section>`;$('#detailScrim').classList.add('open');$('#detailScrim').setAttribute('aria-hidden','false');document.body.style.overflow='hidden';$('#detailClose').focus();setTimeout(()=>{const btn=document.getElementById('detailLikeBtn'); if(btn){ btn.onclick=(e)=>{ e.stopPropagation(); toggleLike(j.id,e); }; }},0)}
 function closeDetail(){if(!$('#detailScrim').classList.contains('open'))return;$('#detailScrim').classList.remove('open');$('#detailScrim').setAttribute('aria-hidden','true');document.body.style.overflow='';if(lastFocus)lastFocus.focus()}
-$('#jobGrid').onclick=e=>{const c=e.target.closest('.job-card');if(c)openDetail(c.dataset.id)};$('#jobGrid').onkeydown=e=>{if((e.key==='Enter'||e.key===' ')&&e.target.closest('.job-card')){e.preventDefault();openDetail(e.target.closest('.job-card').dataset.id)}};$('#detailScrim').onclick=e=>{if(e.target.id==='detailScrim'||e.target.closest('#detailClose'))closeDetail()};
-function render(){const a=filtered();renderNavigation();renderCharts();renderBreakdowns();const parts=[`${a.length.toLocaleString()} jobs`,...[...state.role],...[...state.metro].map(v=>labels.metro[v]),...[...state.level].map(v=>labels.level[v])];$('#resultsTitle').textContent=parts.join(' · ');const extras=[];if(state.mode.size)extras.push([...state.mode].map(v=>labels.mode[v]).join(' + '));if(state.source.size)extras.push(`source: ${[...state.source].join(' + ')}`);if(state.company.size)extras.push(`company: ${[...state.company].join(' + ')}`);if(state.salary)extras.push('salary listed');if(state.q)extras.push(`matching “${state.q}”`);$('#resultsMeta').innerHTML=extras.length?`Also filtered by <strong>${esc(extras.join(' · '))}</strong> · ${totalJobs.toLocaleString()} total in snapshot`:`${totalJobs.toLocaleString()} total listings in snapshot`;$('#mobileCount').textContent=`${a.length.toLocaleString()} matches`;const show=a.slice(0,state.shown);$('#jobGrid').innerHTML=show.length?show.map(jobCard).join(''):`<div class="empty"><h3>No exact matches</h3><p>Try removing a filter or searching a broader term.</p></div>`;$('#loadMore').hidden=state.shown>=a.length;$('#loadMore').textContent=`Show more · ${Math.min(24,a.length-state.shown).toLocaleString()} next`}
+$('#jobGrid').onclick=e=>{const likeBtn=e.target.closest('[data-like]');if(likeBtn && likeBtn.classList.contains('like-btn')){ toggleLike(likeBtn.getAttribute('data-like'), e); return; } const c=e.target.closest('.job-card');if(c)openDetail(c.dataset.id)};$('#jobGrid').onkeydown=e=>{if((e.key==='Enter'||e.key===' ')&&e.target.closest('.job-card')){e.preventDefault();openDetail(e.target.closest('.job-card').dataset.id)}};$('#detailScrim').onclick=e=>{if(e.target.id==='detailScrim'||e.target.closest('#detailClose'))closeDetail()};
+
+$('#likedFilterChip').onclick=()=>{
+  state.likedOnly=!state.likedOnly;
+  state.shown=24;
+  if(state.likedOnly){
+    // if no valid liked jobs, show empty but keep chip active
+  }
+  syncControls();render();
+  $('#resultsHead').scrollIntoView({behavior:'smooth',block:'start'});
+};
+
+function render(){const a=filtered();renderNavigation();renderCharts();renderBreakdowns();const parts=[`${a.length.toLocaleString()} jobs`,...[...state.role],...[...state.metro].map(v=>labels.metro[v]),...[...state.level].map(v=>labels.level[v])];$('#resultsTitle').textContent=parts.join(' · ');const extras=[];if(state.mode.size)extras.push([...state.mode].map(v=>labels.mode[v]).join(' + '));if(state.source.size)extras.push(`source: ${[...state.source].join(' + ')}`);if(state.company.size)extras.push(`company: ${[...state.company].join(' + ')}`);if(state.salary)extras.push('salary listed');if(state.q)extras.push(`matching “${state.q}”`);$('#resultsMeta').innerHTML=extras.length?`Also filtered by <strong>${esc(extras.join(' · '))}</strong> · ${totalJobs.toLocaleString()} total in snapshot`:`${totalJobs.toLocaleString()} total listings in snapshot`;$('#mobileCount').textContent=`${a.length.toLocaleString()} matches`;const show=a.slice(0,state.shown);$('#jobGrid').innerHTML=show.length?show.map(jobCard).join(''):`<div class="empty"><h3>No exact matches</h3><p>Try removing a filter or searching a broader term.</p></div>`;$('#loadMore').hidden=state.shown>=a.length;$('#loadMore').textContent=`Show more · ${Math.min(24,a.length-state.shown).toLocaleString()} ;try{syncLikedUI();updateLikedChip();}catch(e){}next`}
 $('#loadMore').onclick=()=>{state.shown+=24;render()};
 const filters=$('#filters'),scrim=$('#sheetScrim');function sheet(open){filters.classList.toggle('open',open);scrim.classList.toggle('open',open);document.body.style.overflow=open?'hidden':''}$('#mobileFilterBtn').onclick=()=>sheet(true);$('#sheetOpen').onclick=()=>sheet(true);scrim.onclick=()=>sheet(false);document.addEventListener('keydown',e=>{if(e.key==='Escape'){$('#detailScrim').classList.contains('open')?closeDetail():sheet(false)}});
 syncControls();render();
