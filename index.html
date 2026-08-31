@@ -76,6 +76,67 @@
   .liked-chip{font-size:12px;min-height:36px;padding:0 11px}
 }
 
+
+/* First-time Like popup - matches light/dark theme, mobile-friendly */
+.liked-popup-backdrop{
+  position:fixed;inset:0;z-index:9998;
+  background:rgba(0,0,0,.48);
+  backdrop-filter:blur(2px) saturate(1.1);
+  display:none;align-items:center;justify-content:center;
+  padding:clamp(16px,4vw,24px);
+  opacity:0;transition:opacity .18s ease;
+}
+.liked-popup-backdrop.open{
+  display:flex;opacity:1;
+}
+.liked-popup{
+  width:min(92vw,420px);
+  background:var(--panel);
+  color:var(--ink);
+  border:1px solid var(--line);
+  border-radius:16px;
+  box-shadow:0 20px 60px rgba(0,0,0,.22), var(--shadow);
+  padding:22px 20px 16px;
+  transform:translateY(8px) scale(.98);
+  transition:transform .2s cubic-bezier(.2,.8,.2,1);
+  font-family:'Public Sans',sans-serif;
+}
+.liked-popup-backdrop.open .liked-popup{
+  transform:translateY(0) scale(1);
+}
+.liked-popup h3{
+  margin:0 0 10px;
+  font-size:18px;line-height:1.25;font-weight:800;
+  letter-spacing:-.02em;
+  display:flex;align-items:center;gap:8px;
+}
+.liked-popup h3 span.heart{color:#ff2a4d}
+.liked-popup p{
+  margin:0 0 18px;
+  font-size:14.5px;line-height:1.55;color:var(--muted);
+}
+.liked-popup p strong{color:var(--ink);font-weight:700}
+.liked-popup-actions{
+  display:flex;justify-content:flex-end;gap:10px;
+}
+.liked-popup-btn{
+  min-height:42px;min-width:88px;
+  border-radius:999px;border:1px solid var(--line);
+  background:var(--ink);color:var(--bg);
+  font-weight:750;font-size:14px;cursor:pointer;
+  padding:0 18px;
+  transition:filter .15s, transform .12s;
+}
+.liked-popup-btn:hover{filter:brightness(1.06);transform:translateY(-1px)}
+.liked-popup-btn:active{transform:translateY(0)}
+@media(max-width:480px){
+  .liked-popup{padding:18px 16px 14px;border-radius:14px}
+  .liked-popup h3{font-size:17px}
+}
+[data-theme="dark"] .liked-popup-backdrop{
+  background:rgba(0,0,0,.62);
+}
+
 </style>
 </head>
 <body>
@@ -172,6 +233,47 @@ try{
   if(raw){ JSON.parse(raw).forEach(id=>likedSet.add(String(id))); }
 }catch(e){}
 function saveLiked(){ try{ localStorage.setItem(LIKED_KEY, JSON.stringify([...likedSet])); }catch(e){} }
+
+const LIKED_POPUP_SEEN_KEY='job-search-app-liked-seen';
+function showLikedPopup(){
+  const backdrop=document.getElementById('likedPopupBackdrop');
+  if(!backdrop) return;
+  backdrop.classList.add('open');
+  backdrop.setAttribute('aria-hidden','false');
+  document.body.style.overflow='hidden';
+  // focus OK for a11y
+  setTimeout(()=>{ const btn=document.getElementById('likedPopupOk'); if(btn) btn.focus(); }, 50);
+}
+function hideLikedPopup(){
+  const backdrop=document.getElementById('likedPopupBackdrop');
+  if(!backdrop) return;
+  backdrop.classList.remove('open');
+  backdrop.setAttribute('aria-hidden','true');
+  // restore overflow only if detail not open
+  const detailOpen=document.getElementById('detailScrim')?.classList.contains('open');
+  if(!detailOpen) document.body.style.overflow='';
+  try{ localStorage.setItem(LIKED_POPUP_SEEN_KEY, '1'); }catch(e){}
+}
+(function initLikedPopup(){
+  // dismiss on OK
+  document.addEventListener('click', e=>{
+    if(e.target && e.target.id==='likedPopupOk'){ hideLikedPopup(); }
+  });
+  // dismiss on backdrop click (outside modal)
+  document.addEventListener('click', e=>{
+    const bd=document.getElementById('likedPopupBackdrop');
+    if(!bd) return;
+    if(e.target===bd){ hideLikedPopup(); }
+  });
+  // dismiss on Escape
+  document.addEventListener('keydown', e=>{
+    if(e.key==='Escape'){
+      const bd=document.getElementById('likedPopupBackdrop');
+      if(bd && bd.classList.contains('open')){ hideLikedPopup(); }
+    }
+  });
+})();
+
 function isLiked(id){ return likedSet.has(String(id)); }
 function validLikedCount(){
   // count only ids that still exist in current dataset
@@ -243,9 +345,24 @@ function updateDetailLike(sid){
 function toggleLike(id, ev){
   if(ev){ ev.preventDefault(); ev.stopPropagation(); }
   const sid=String(id);
+  const wasLiked=likedSet.has(sid);
+  const isFirstEver = (()=>{ try{ return !localStorage.getItem(LIKED_POPUP_SEEN_KEY); }catch(e){ return true; } })();
+  const hadNoLikesBefore = likedSet.size===0;
   if(likedSet.has(sid)) likedSet.delete(sid); else likedSet.add(sid);
   saveLiked();
   syncLikedUI();
+  // First-time Like popup: show once when user likes first job and has never seen popup
+  try{
+    const justLiked = !wasLiked && likedSet.has(sid);
+    if(justLiked && isFirstEver){
+      // show after UI updates, ensure likedSet saved
+      setTimeout(()=>{ showLikedPopup(); }, 80);
+    } else if(justLiked && hadNoLikesBefore){
+      // edge: if somehow flag missing but this is first like in this dataset
+      const seen = localStorage.getItem(LIKED_POPUP_SEEN_KEY);
+      if(!seen){ setTimeout(()=>{ showLikedPopup(); }, 80); }
+    }
+  }catch(e){}
   if(state.likedOnly){
     state.shown=24;
     render();
@@ -323,4 +440,16 @@ const filters=$('#filters'),scrim=$('#sheetScrim');function sheet(open){filters.
 syncControls();render();
 })();
 </script>
+
+<!-- First-time Like popup -->
+<div id="likedPopupBackdrop" class="liked-popup-backdrop" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="likedPopupTitle">
+  <div class="liked-popup" role="document">
+    <h3 id="likedPopupTitle"><span class="heart">♥</span> Liked!</h3>
+    <p><strong>Liked jobs expire after 7 days.</strong> Good luck with your job search!</p>
+    <div class="liked-popup-actions">
+      <button id="likedPopupOk" class="liked-popup-btn" type="button">OK</button>
+    </div>
+  </div>
+</div>
+
 </body></html>
